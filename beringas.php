@@ -118,7 +118,6 @@ function crotz($x)
                         $end = fopen("shell_die.txt", "a+");
                         fwrite($end, "\n[DIE] Shell at " . $x);
                         print "[".date('H:m:s')."] [DIE] Shell at ".$x." can't matching the password with ".$pass."\n";
-                        print $exe;
                         fclose($end);
                     }
                 }
