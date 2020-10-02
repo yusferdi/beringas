@@ -7,6 +7,4 @@ To use this tools just usage this command:
 
 And then follow the instruction ^_^
 
-<img src="http://audiosholat.com/Screenshot from 2019-01-02 20-08-52.png"/>
-<img src="http://audiosholat.com/Screenshot from 2019-01-02 20-09-01.png"/>
-<img src="http://audiosholat.com/IMG_20181230_141505.jpg"/>
+<iframe src="https://drive.google.com/file/d/1Risbkqf9jWQLPxcCY22czqqootZa8g27/preview" width="640" height="480"></iframe>
